@@ -1,0 +1,13 @@
+extends layout
+
+block content
+    h1= title
+    p Welcome to #{title}
+    button(style = 'margin-top: 20px;', type='submit', onclick="location.href='/';") Go to main
+    button(style = 'margin-top: 20px;', type='submit', onclick="location.href='/sendForm';") Send file
+
+    each val in imagesList
+        div(class = 'divClass')
+            - var imageKey = val.split("/pawlak-aws-project/")[1]
+            img(id = imageKey, src = val)
+            input(id = imageKey, class = 'checkbox-class', type='checkbox' onchange='applyToArray(selectedImages, this)')
