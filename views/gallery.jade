@@ -2,12 +2,14 @@ extends layout
 
 block content
     h1= title
-    p Welcome to #{title}
-    button(style = 'margin-top: 20px;', type='submit', onclick="location.href='/';") Go to main
-    button(style = 'margin-top: 20px;', type='submit', onclick="location.href='/sendForm';") Send file
+    p Our #{title}
+    div
+        button(style = 'margin-top: 20px;', class="btn btn-lg btn-primary" type='submit', onclick="location.href='/';") Go to main
+    div
+        button(style = 'margin-top: 20px;', class="btn btn-lg btn-primary" type='submit', onclick="location.href='/sendForm';") Send file
 
     each val in imagesList
         div(class = 'divClass')
             - var imageKey = val.split("/pawlak-aws-project/")[1]
-            img(id = imageKey, src = val)
-            input(id = imageKey, class = 'checkbox-class', type='checkbox' onchange='applyToArray(selectedImages, this)')
+            img(id = imageKey, src = val class='img-thumbnail' alt='200x200' style="width: 200px; height: 200px; margin-right:10px" data-holder-rendered="true")
+            input(id = imageKey, class = 'checkbox-class', type='checkbox')
