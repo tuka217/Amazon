@@ -1,16 +1,19 @@
 extends layout
 
 block content
-    h1(class='panel-title') #{title} to Amazon S3
-    button(style = 'margin-top: 20px;', type='submit', onclick="location.href='/';") Go to main
-    button(style = 'margin-top: 20px;', type='submit', onclick="location.href='/gallery';") Go to gallery
-    div(class='container')
-        form(action='https://' + bucket + '.s3.amazonaws.com', method='POST', class='form-horizontal' enctype='multipart/form-data')
-            div(class=container)
-                each field in fields
-                    input(type='hidden' name= field.name value= field.value)
-            div(class='form-group')
-                label File input
-                input(type='file' name='file')
-            div(class='container')
-                input(type='submit' class='button' value='Send')
+    h1 #{title} to S3
+    p Here you can upload file to bucket
+    div
+        button(style = 'margin-top: 20px;', class="btn btn-lg btn-primary"  type='submit', onclick="location.href='/';") Go to main
+    div
+        button(style = 'margin-top: 20px;',  class="btn btn-lg btn-primary" type='submit', onclick="location.href='/gallery';") Go to gallery
+    br
+    form(action='https://' + bucket + '.s3.amazonaws.com', method='POST', class='form-horizontal' enctype='multipart/form-data')
+        div(class=container)
+            each field in fields
+                input(type='hidden' name= field.name value= field.value)
+        div(class='form-group')
+            label Select file
+            input(type='file' name='file')
+        div(class='container')
+            input(type='submit' class='btn btn-lg btn-primary' value='Send')
