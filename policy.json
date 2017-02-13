@@ -1,11 +1,11 @@
 {
-  "expiration" : {"day":1},
-  "conditions": [
-    { "bucket": "weeia-walasek-anna" },
-    [ "starts-with", "$key", "walasek/" ],
-    { "acl": "public-read" },
-    [ "content-length-range", 0, 1048576 ],
-    {"success_action_redirect": "http://localhost:8080"}
-  ]
+    "expiration": { "day": 1 },
+    "conditions": [
+        { "bucket": "rusek-bucket" },
+        ["starts-with", "$key", "photos/"],
+        { "acl": "public-read" },
+        ["content-length-range", 0, 1048576],
+        { "success_action_redirect": "http://localhost:8080" }
+    ]
 
 }
