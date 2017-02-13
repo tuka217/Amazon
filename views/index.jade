@@ -3,5 +3,7 @@ extends layout
 block content
   h1= title
   p Welcome to #{title}
-  button(style = 'margin-top: 20px;', type='submit', onclick="location.href='/sendForm';") Submit a file
-  button(style = 'margin-top: 20px;', type='submit', onclick="location.href='/gallery';") Go to gallery
+  div
+    button(style = 'margin-top: 20px;', class="btn btn-lg btn-primary" type='submit', onclick="location.href='/sendForm';") Submit a file
+  div
+    button(style = 'margin-top: 20px;', class="brn btn-lg btn-primary" type='submit', onclick="location.href='/gallery';") Go to gallery
