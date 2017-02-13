@@ -8,6 +8,7 @@ var bodyParser = require('body-parser');
 var index = require('./routes/index');
 var sendForm = require('./routes/sendForm');
 var gallery = require('./routes/gallery');
+var uploadSucceeded = require('./routes/uploadSucceeded');
 
 var app = express();
 
@@ -26,6 +27,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', index);
 app.use('/sendForm', sendForm);
 app.use('/gallery', gallery);
+app.use('/uploadSucceeded', uploadSucceeded);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
