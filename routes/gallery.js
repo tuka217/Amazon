@@ -49,4 +49,14 @@ router.get('/', function(req, res, next) {
     });
 });
 
+router.post('/', function(req, res, next) {
+    var processedArray = [];
+    for(var key in req.body) {
+        item = req.body[key];
+        processedArray.push(item);
+    }
+
+    console.log(processedArray);
+});
+
 module.exports = router;

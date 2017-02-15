@@ -8,8 +8,12 @@ block content
     div
         button(style = 'margin-top: 20px;', class="btn btn-lg btn-primary" type='submit', onclick="location.href='/sendForm';") Send file
 
-    each val in imagesList
-        div(class = 'divClass')
-            - var imageKey = val.split("/pawlak-aws-project/")[1]
-            img(id = imageKey, src = val class='img-thumbnail' alt='200x200' style="width: 200px; height: 200px; margin-right:10px" data-holder-rendered="true")
-            input(id = imageKey, class = 'checkbox-class', type='checkbox')
+    form(action='/gallery', method='POST', class='form-horizontal', enctype='application/json' onsubmit='selectedImagesToString()')
+        - var counter = 0;
+        each val in imagesList
+            div
+                - var imageKey = val.split("/weeia-walasek-anna/")[1]
+                img(id = imageKey, src = val class='img-thumbnail' alt='200x200' style="width: 200px; height: 200px; margin-right:10px" data-holder-rendered="true")
+                input(value = imageKey, name= counter, type='checkbox')
+                - counter ++;
+        input(type='submit' class='btn btn-lg btn-primary' value='Send')
