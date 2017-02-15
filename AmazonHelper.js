@@ -1,6 +1,5 @@
 var AWS = require('aws-sdk');
 var uuid = require('node-uuid');
-var gm = require('gm');
 var express = require('express');
 var jimp = require('jimp');
 var fs = require('fs');
@@ -18,9 +17,8 @@ var prefix = 'photos/';
 var imageName = '';
 var tempImageProcessDirectory = "/home/bitnami/TempPhotos/";
 var tempImagePath = '';
-var Akey = 'AKIAI6DQOKM475EHNRAA';
-var sKey = 'xrM2pTq8G2VNb+740ke+Wu3QQDF1QdR8iLv66MfK';
 var region = "us-west-2";
+//nieużywane
 var deletePhoto = function(photoKey) {
     var result;
     s3Service.deleteObject({ Key: photoKey }, function(err, data) {
@@ -60,8 +58,6 @@ var processPhoto = function(key) {
             console.log(err, err.stack);
             putLog(err.message, new Date().toISOString(), "S3Error");
         } else {
-
-            putLog(tempImagePath, new Date().toISOString(), "Ścieżka do nowego pliku");
             console.log(tempImagePath);
             if (imageFullPathName != '') {
                 jimp.read(imageFullPathName, function(error, img) {
@@ -87,6 +83,8 @@ var processPhoto = function(key) {
                                     if (err) {
                                         console.log(err.message);
                                         putLog(err.message, new Date().toISOString(), "S3Error");
+                                    } else {
+                                        putLog("Object" + fullKey + "has been rotated.", new Date().toISOString(), "ProcessInfo");
                                     }
 
                                 })
@@ -109,7 +107,7 @@ var putLog = function(message, timestamp, errCode) {
                 Replace: true || false
             },
             {
-                Name: 'Error Code',
+                Name: 'Code',
                 Value: errCode,
                 Replace: true || false
             },
@@ -123,7 +121,7 @@ var putLog = function(message, timestamp, errCode) {
         ItemName: uuid.v1()
     };
     dbService.putAttributes(params, function(err, data) {
-        if (err) console.log(err, err.stack); // an error occurred
+        if (err) console.log(err, err.stack);
     });
 }
 
@@ -168,11 +166,12 @@ var putMesagesToQueue = function(photoKeys) {
     };
     var result = sqsService.sendMessageBatch(params, function(err, data) {
         if (err) {
-            console.log(err, err.stack);
+            console.log(err.message, err.stack);
             putLog(err.message, new Date().toISOString(), "SQSError");
             return false;
         } else {
-            console.log("Success", data.MessageId);
+            console.log("Success put to queue", data.MessageId);
+            putLog("Image has been put to queue", new Date().toISOString(), "SQSInfo");
             return true;
         }
     });
