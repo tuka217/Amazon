@@ -11,7 +11,7 @@ var sqsService = new AWS.SQS();
 var dbService = new AWS.SimpleDB();
 
 var bucketName = 'rusek-bucket';
-var domainName = 'RusekLogs';
+var domainName = 'AWSRusek';
 var queueURL = 'https://sqs.us-west-2.amazonaws.com/983680736795/RusekSQS';
 var prefix = 'photos/';
 var imageName = '';
@@ -49,11 +49,15 @@ var processPhoto = function(key) {
         Bucket: bucketName,
         Key: fullKey
     };
+    var downloadStream;
 
-    var downloadStream = s3Service.getObject(params).createReadStream().pipe(imageDownloaded);
-
-    var result = '';
+    downloadStream = s3Service.getObject(params).createReadStream().pipe(imageDownloaded).on('error', function() {
+        console.log("error while downloading object " + fullKey + '');
+        putLog(error.message, new Date().toISOString(), "DownloadError");
+        imageDownloaded.end();
+    });
     downloadStream.on('finish', function(err, res) {
+        imageDownloaded.end();
         if (err) {
             console.log(err, err.stack);
             putLog(err.message, new Date().toISOString(), "S3Error");
@@ -74,6 +78,7 @@ var processPhoto = function(key) {
                                 var metaData = 'image/*';
 
                                 var params = {
+                                    ACL: 'public-read',
                                     Bucket: bucketName,
                                     Key: fullKey,
                                     Body: buff,
@@ -84,10 +89,10 @@ var processPhoto = function(key) {
                                         console.log(err.message);
                                         putLog(err.message, new Date().toISOString(), "S3Error");
                                     } else {
-                                        putLog("Object" + fullKey + "has been rotated.", new Date().toISOString(), "ProcessInfo");
+                                        putLog("Object " + fullKey + " has been rotated.", new Date().toISOString(), "ProcessInfo");
                                     }
 
-                                })
+                                });
                             }
                         });
                     }
@@ -102,7 +107,7 @@ var processPhoto = function(key) {
 var putLog = function(message, timestamp, errCode) {
     var params = {
         Attributes: [{
-                Name: 'Log Time',
+                Name: 'LogTime',
                 Value: timestamp,
                 Replace: true || false
             },

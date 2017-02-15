@@ -9,13 +9,8 @@ var app = Consumer.create({
     queueUrl: queueURL,
     handleMessage: function(message, done) {
         var key = message.Body;
-        var isProcessed = amazon.processPhoto(key);
-        if (isProcessed) {
-            done();
-        } else {
-            var err = '';
-            done(err);
-        }
+        amazon.processPhoto(key);
+        done();
     },
     sqs: new AWS.SQS()
 });
