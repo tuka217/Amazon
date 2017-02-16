@@ -55,12 +55,20 @@ router.post('/', function(req, res, next) {
         item = req.body[key];
         processedArray.push(item);
     }
-    if (processedArray.length > 10) {
-        res.render('error', { message: "Cannot process more than ten elements" });
+    if (processedArray.length > 4) {
+        var message = "Cannot process mor than 10 elements at once";
+        amazon.putLog(message, new Date().toISOString(), "CapacityError");
+        res.locals.message = message;
+        res.locals.error = {};
+
+        // render the error page
+        res.status(500);
+        res.render('error');
+    } else {
+        amazon.putMesagesToQueue(processedArray);
+        console.log(processedArray);
+        res.redirect('/gallery');
     }
-    amazon.putMesagesToQueue(processedArray);
-    console.log(processedArray);
-    res.redirect('/gallery');
 });
 
 module.exports = router;
