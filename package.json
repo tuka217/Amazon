@@ -19,6 +19,7 @@
     "moment": "^2.5.1",
     "morgan": "~1.7.0",
     "node-uuid": "^1.4.7",
+    "promisepipe": "^2.0.0",
     "serve-favicon": "~2.3.2",
     "sqs-consumer": "^3.4.0",
     "webs-weeia": "0.0.2"

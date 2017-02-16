@@ -1,12 +1,12 @@
 var express = require('express');
 var router = express.Router();
 var AWS = require('aws-sdk');
-
+var amazon = require('../AmazonHelper');
 var helpers = require("../helpers");
 var Policy = require("../s3post").Policy;
 var POLICY_FILE = "policy.json";
-var s3URL = "https://s3-us-west-2.amazonaws.com/weeia-walasek-anna/"
-var prefix = "walasek/";
+var s3URL = "https://s3-us-west-2.amazonaws.com/rusek-bucket/"
+var prefix = "photos/";
 var AWS_CONFIG_FILE = "config.json";
 
 router.get('/', function(req, res, next) {
@@ -21,7 +21,7 @@ router.get('/', function(req, res, next) {
         accessKeyId: awsConfig.accessKeyId,
         secretAccessKey: awsConfig.secretAccessKey,
         "region": awsConfig.region
-});
+    });
 
     var s3 = new AWS.S3();
     var imagesList = [];
@@ -51,12 +51,24 @@ router.get('/', function(req, res, next) {
 
 router.post('/', function(req, res, next) {
     var processedArray = [];
-    for(var key in req.body) {
+    for (var key in req.body) {
         item = req.body[key];
         processedArray.push(item);
     }
+    if (processedArray.length > 4) {
+        var message = "Cannot process mor than 10 elements at once";
+        amazon.putLog(message, new Date().toISOString(), "CapacityError");
+        res.locals.message = message;
+        res.locals.error = {};
 
-    console.log(processedArray);
+        // render the error page
+        res.status(500);
+        res.render('error');
+    } else {
+        amazon.putMesagesToQueue(processedArray);
+        console.log(processedArray);
+        res.redirect('/gallery');
+    }
 });
 
 module.exports = router;
