@@ -63,14 +63,14 @@ router.get('/', function(req, res, next) {
                     console.log('ATTRIBUTE PUT!' + data);           // successful response
                 }
             });
-
-            var paramsSelect = {
-                SelectExpression: 'select * from walasekawslogs' /* required */
-            };
-            simpleDB.select(paramsSelect, function(err, data) {
-                if (err) console.log(err, err.stack); // an error occurred
-                else  console.log("==============" + util.inspect(data, {showHidden: false, depth: null}));
-            });
+            //
+            // var paramsSelect = {
+            //     SelectExpression: 'select * from walasekawslogs' /* required */
+            // };
+            // simpleDB.select(paramsSelect, function(err, data) {
+            //     if (err) console.log(err, err.stack); // an error occurred
+            //     else  console.log("==============" + util.inspect(data, {showHidden: false, depth: null}));
+            // });
         }
     });
 

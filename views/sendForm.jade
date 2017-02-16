@@ -16,4 +16,8 @@ block content
             label Select file
             input(type='file' name='file')
         div(class='container')
-            input(type='submit' class='btn btn-lg btn-primary' value='Send')
+            input(type='submit' class='btn btn-lg btn-primary' value='Send' onclick="myFunction()")
+    script.
+        - function myFunction() {
+            window.location.href = '../uploadSucceeded'
+        }
