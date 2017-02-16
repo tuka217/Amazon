@@ -6,17 +6,13 @@ var fs = require('fs');
 var router = express.Router();
 var knox = require('knox');
 AWS.config.loadFromPath('./config.json');
-var s3Service = new AWS.S3();
-var sqsService = new AWS.SQS();
-var dbService = new AWS.SimpleDB();
+var promisePipe = require("promisepipe");
 
 var bucketName = 'rusek-bucket';
 var domainName = 'AWSRusek';
 var queueURL = 'https://sqs.us-west-2.amazonaws.com/983680736795/RusekSQS';
 var prefix = 'photos/';
-var imageName = '';
 var tempImageProcessDirectory = "/home/bitnami/TempPhotos/";
-var tempImagePath = '';
 var region = "us-west-2";
 //nieużywane
 var deletePhoto = function(photoKey) {
@@ -34,62 +30,65 @@ var deletePhoto = function(photoKey) {
 }
 
 var processPhoto = function(key) {
-    var photoKey = key;
-    console.log(photoKey);
-    imageName = photoKey.split("/").pop();
+    var tempImagePath = '';
+    var imageName = '';
+    var fullKey = key;
+    imageName = fullKey.split("/").pop();
     console.log(imageName);
     var directory = tempImageProcessDirectory;
     var imageFullPathName = directory + imageName;
     var imageDownloaded = fs.createWriteStream(imageFullPathName);
     console.log(imageDownloaded.path);
     tempImagePath = imageDownloaded.path;
-    var fullKey = prefix + imageName;
     console.log(fullKey);
     var params = {
         Bucket: bucketName,
         Key: fullKey
     };
-    var downloadStream;
+    var s3Service = new AWS.S3();
+    var downloadStream = s3Service.getObject(params).createReadStream().pipe(imageDownloaded);
 
-    downloadStream = s3Service.getObject(params).createReadStream().pipe(imageDownloaded).on('error', function() {
-        console.log("error while downloading object " + fullKey + '');
-        putLog(error.message, new Date().toISOString(), "DownloadError");
-        imageDownloaded.end();
-    });
-    downloadStream.on('finish', function(err, res) {
-        imageDownloaded.end();
+    downloadStream.on('finish', function(err, elem) {
         if (err) {
-            console.log(err, err.stack);
-            putLog(err.message, new Date().toISOString(), "S3Error");
+            putLog(err.message, new Date().toISOString(), "DownloadError");
         } else {
+            console.log("download finished");
             console.log(tempImagePath);
             if (imageFullPathName != '') {
-                jimp.read(imageFullPathName, function(error, img) {
-                    if (error) {
-                        console.log(error.message);
-                        putLog(error.message, new DateTime().toISOString, "ProcessingError");
+                jimp.read(imageFullPathName, function(err, img) {
+                    if (err) {
+                        putLog(err.message, new Date().toISOString(), "JIMPError");
                     } else {
-                        img.rotate(90).write(imageFullPathName);
-                        var fb = img.getBuffer(jimp.AUTO, function(err, buff) {
-                            if (err) {
-                                console.log(err.message);
-                                putLog(err.message, new DateTime().toISOString(), "ProcessingError");
+                        console.log("read finished");
+                        img.rotate(90).write(imageFullPathName, function(errorr, dat) {
+                            if (errorr) {
+                                putLog(errorr.message, new Date().toISOString(), "JIMPError");
                             } else {
-                                var metaData = 'image/*';
-
-                                var params = {
-                                    ACL: 'public-read',
-                                    Bucket: bucketName,
-                                    Key: fullKey,
-                                    Body: buff,
-                                    ContentType: metaData
-                                };
-                                s3Service.putObject(params, function(err, response) {
+                                var fb = fs.readFile(imageFullPathName, function(err, buff) {
                                     if (err) {
                                         console.log(err.message);
-                                        putLog(err.message, new Date().toISOString(), "S3Error");
+                                        putLog(err.message, new DateTime().toISOString(), "ProcessingError");
                                     } else {
-                                        putLog("Object " + fullKey + " has been rotated.", new Date().toISOString(), "ProcessInfo");
+                                        console.log("rotate finished");
+                                        var metaData = 'image/*';
+
+                                        var params = {
+                                            ACL: 'public-read',
+                                            Bucket: bucketName,
+                                            Key: fullKey,
+                                            Body: buff,
+                                            ContentType: metaData
+                                        };
+                                        s3Service.putObject(params, function(err, response) {
+                                            fs.unlink(imageFullPathName);
+                                            if (err) {
+                                                console.log(err.message);
+                                                putLog(err.message, new Date().toISOString(), "S3Error");
+                                            } else {
+                                                putLog("Object " + fullKey + " has been rotated.", new Date().toISOString(), "ProcessInfo");
+                                            }
+
+                                        });
                                     }
 
                                 });
@@ -125,6 +124,7 @@ var putLog = function(message, timestamp, errCode) {
         DomainName: domainName,
         ItemName: uuid.v1()
     };
+    var dbService = new AWS.SimpleDB();
     dbService.putAttributes(params, function(err, data) {
         if (err) console.log(err, err.stack);
     });
@@ -159,24 +159,29 @@ var getMessageFromQueue = function() {
 }
 
 var putMesagesToQueue = function(photoKeys) {
-
-    var entries = [];
-    photoKeys.each(function(item) {
-        Entries.push('{MessageBody: ' + item + ' }');
-    });
+    console.log(photoKeys);
+    var entries = new Array();
+    photoKeys.forEach(function(element) {
+        var item = new Object();
+        item.DelaySeconds = 0;
+        item.Id = uuid.v1();
+        item.MessageBody = element;
+        entries.push(item);
+    }, this);
+    console.log(JSON.stringify(entries));
     var params = {
-        DelaySeconds: 0,
         Entries: entries,
         QueueUrl: queueURL
     };
+    var sqsService = new AWS.SQS();
     var result = sqsService.sendMessageBatch(params, function(err, data) {
         if (err) {
             console.log(err.message, err.stack);
             putLog(err.message, new Date().toISOString(), "SQSError");
             return false;
         } else {
-            console.log("Success put to queue", data.MessageId);
-            putLog("Image has been put to queue", new Date().toISOString(), "SQSInfo");
+            console.log("Success put to queue");
+            putLog("Images has been put to queue", new Date().toISOString(), "SQSInfo");
             return true;
         }
     });
