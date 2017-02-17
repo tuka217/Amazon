@@ -31,7 +31,7 @@ router.get('/', function(req, res, next) {
     var simpleDB = new AWS.SimpleDB(awsConfig);
 
     var params = {
-        DomainName: 'walasekawslogs'
+        DomainName: 'AWSRusek'
     };
 
     simpleDB.createDomain(params, function(err, data) {
@@ -46,7 +46,7 @@ router.get('/', function(req, res, next) {
             Replace: false
         },
         ],
-        DomainName: 'walasekawslogs',
+        DomainName: 'AWSRusek',
         ItemName: 'getFormToSendFileEvent'
     };
 

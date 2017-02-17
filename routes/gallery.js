@@ -5,7 +5,7 @@ var amazon = require('../AmazonHelper');
 var helpers = require("../helpers");
 var Policy = require("../s3post").Policy;
 var POLICY_FILE = "policy.json";
-var s3URL = "https://s3-us-west-2.amazonaws.com/rusek-bucket/"
+var s3URL = "https://s3-us-west-2.amazonaws.com/rusek-bucket/";
 var prefix = "photos/";
 var AWS_CONFIG_FILE = "config.json";
 
