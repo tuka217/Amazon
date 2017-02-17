@@ -12,7 +12,7 @@ block content
         - var counter = 0;
         each val in imagesList
             div
-                - var imageKey = val.split("/weeia-walasek-anna/")[1]
+                - var imageKey = val.split("/rusek-bucket/")[1]
                 img(id = imageKey, src = val class='img-thumbnail' alt='200x200' style="width: 200px; height: 200px; margin-right:10px" data-holder-rendered="true")
                 input(value = imageKey, name= counter, type='checkbox')
                 - counter ++;
