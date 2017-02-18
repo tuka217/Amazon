@@ -4,6 +4,7 @@
     { "bucket": "rusek-bucket" },
     [ "starts-with", "$key", "photos/" ],
     { "acl": "public-read" },
-    [ "content-length-range", 0, 1048576 ]
+    [ "content-length-range", 0, 1048576 ],
+    {"success_action_redirect": "http://walasekelb-1622619243.us-west-2.elb.amazonaws.com/uploadSucceeded"}
   ]
 }
